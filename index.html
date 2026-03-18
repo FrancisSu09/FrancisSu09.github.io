@@ -1,33 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yu-Qian Su</title>
+    <title>iHealth 企業永續健康平台</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <style>
-        table,
-        th,
-        td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            padding: 5px;
-            text-align: left;
-        }
-    </style>
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Student ID</th>
-        </tr>
-        <tr>
-            <td>蘇郁茜</td>
-            <td>114423017</td>
-        </tr>
-    </table>
+
+    <nav class="navbar">
+        <div class="logo" onclick="showPage('home-page')">🌿 iHealth 企業永續健康平台</div>
+        <button class="nav-btn" onclick="showPage('home-page')">回首頁</button>
+    </nav>
+
+    <div class="container">
+
+        <div id="home-page" class="page-section active">
+            <div class="hero-section">
+                <h1>守護員工健康，落實 ESG 企業永續</h1>
+                <p>我們深信，員工是企業最寶貴的資產。響應聯合國 SDGs 目標「良好健康與福祉」，本公司致力於打造全方位的健康職場環境，從日常飲食、運動習慣到醫療數據追蹤，與您一起啟動健康生活。</p>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-large btn-primary" onclick="showPage('benefits-page')">
+                    🎁 公司健康運動福利
+                    <span>查看合作廠商與專屬優惠</span>
+                </button>
+                <button class="btn-large btn-secondary" onclick="showPage('query-page')">
+                    🔍 員工健康查詢系統
+                    <span>查看年度健檢與 iHealth 介入計畫</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="benefits-page" class="page-section hidden">
+            <h2>公司健康運動福利</h2>
+            <p style="text-align:center; color:#666;">點擊廠商卡片查看詳細福利內容</p>
+
+            <div class="benefits-grid">
+                <div class="benefit-category">
+                    <h3>🥗 健康飲食</h3>
+                    <div class="partner-card" onclick="showModal('健康餐盒聯盟', '憑員工證享全品項 85 折，訂閱包月方案加贈防彈咖啡。')">健康餐盒聯盟</div>
+                    <div class="partner-card" onclick="showModal('無毒小農市集', '每週五公司大廳駐點，員工專屬 9 折優惠。')">無毒小農市集</div>
+                </div>
+
+                <div class="benefit-category">
+                    <h3>🏋️ 運動健身</h3>
+                    <div class="partner-card" onclick="showModal('Anytime Fitness', '免入會費，月費企業專案價 $999。')">Anytime
+                        Fitness</div>
+                    <div class="partner-card" onclick="showModal('公司內部健身房', '免費使用，並可預約駐點教練諮詢。')">公司內部健身房</div>
+                </div>
+
+                <div class="benefit-category">
+                    <h3>⚾ 賽事觀賞</h3>
+                    <div class="partner-card" onclick="showModal('中華職棒', '每月發放限量 VIP 貴賓室門票抽籤資格。')">中華職棒賽事</div>
+                    <div class="partner-card" onclick="showModal('P. LEAGUE+', '季後賽門票優先購買權及 9 折優惠。')">P. LEAGUE+ 籃球
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="query-page" class="page-section hidden">
+            <div id="loginArea" class="login-section">
+                <h2>員工健康查詢系統</h2>
+                <input type="text" id="empId" placeholder="請輸入工號 (測試請輸入: E001)" value="E001">
+                <input type="text" id="empName" placeholder="請輸入姓名 (測試請輸入: 王小明)" value="王小明">
+                <button class="btn-primary" style="width: 100%; padding: 10px;" onclick="handleLogin()">登入查詢</button>
+            </div>
+
+            <div id="dashboard" class="hidden">
+                <h2 id="welcomeMsg"></h2>
+                <div id="healthStatus" class="status-alert"></div>
+
+                <h3>最新健檢數據 (與標準比對)</h3>
+                <div class="metrics-grid" id="metricsGrid">
+                </div>
+
+                <div id="bookingArea" class="booking-section hidden">
+                    <h3>專屬健康介入計畫 (iHealth)</h3>
+                    <p>本週剩餘免費教練課：<strong id="freeClasses" style="color: #2E8B57; font-size: 1.2em;">2</strong> 次</p>
+
+                    <div class="coach-card">
+                        <div>
+                            <strong>李教練 (阻力訓練/減脂)</strong><br>
+                            <span style="color:#666; font-size:0.9em;">可預約時段：週三 18:30, 週五 19:00</span>
+                        </div>
+                        <button class="btn-primary" onclick="bookClass()">立即預約</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">廠商名稱</h2>
+            <p id="modalDesc">福利詳情內容...</p>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
 </body>
 
 </html>
