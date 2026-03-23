@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello World Blocks</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px;
+            background: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .wrapper {
+            width: 920px;
+            max-width: 100%;
+            margin: 0;
+        }
+
+        .sample {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 38px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .sample span {
+            font-size: 64px;
+            line-height: 1;
+        }
+
+        .top {
+            min-height: 108px;
+            background: #a9ccdb;
+            border: 6px solid #ff5e47;
+            outline: 6px solid #ff5e47;
+            outline-offset: -18px;
+            padding: 12px 22px;
+        }
+
+        .middle {
+            min-height: 78px;
+            background: #fffa00;
+            border: 4px solid #2692ff;
+            border-radius: 18px;
+            padding: 6px 18px;
+        }
+
+        .bottom {
+            min-height: 110px;
+            background: #41b777;
+            border: 18px dotted #8d8d8d;
+            padding: 0 6px;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 900px) {
+            .sample span {
+                font-size: clamp(36px, 8vw, 64px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="sample top">
+            <span>Hello World</span>
+        </div>
+
+        <div class="sample middle">
+            <span>Hello World</span>
+        </div>
+
+        <div class="sample bottom">
+            <span>Hello World</span>
+        </div>
+    </div>
+</body>
+
+</html>
