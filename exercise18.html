@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>White Block</title>
+    <style>
+        .white-box {
+            width: 1180px;
+            /* 白色區塊寬度 */
+            background: #efefef;
+
+            /* 淡灰邊框 */
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+            /* 陰影 */
+            padding: 28px 26px 24px 26px;
+            /* 內距 */
+            font-family: "Times New Roman", serif;
+            /* 文字字型 */
+        }
+
+        .heading1 {
+            margin: 0 0 46px 0;
+            /* 下方留空間 */
+            font-size: 74px;
+            /* 字體大小 */
+            font-weight: bold;
+            /* 粗體 */
+            line-height: 1;
+            display: inline-block;
+            /* 讓上方黑線只跟著文字寬度 */
+            border-top: 8px solid black;
+            /* 上方黑線 */
+            position: relative;
+            /* 讓 ::before 以 heading1 當定位基準 */
+            padding-top: 8px;
+            /* 黑線和文字距離 */
+            text-shadow:
+                3px 3px 0 #f3a7b7,
+                /* 粉紅陰影 */
+                -3px -3px 0 #8ecae6;
+            /* 淺藍陰影 */
+        }
+
+        .heading1::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* 黑線長度跟文字一樣寬 */
+            height: 8px;
+            /* 黑線粗細 */
+            background: black;
+            /* 黑線顏色 */
+            box-shadow: 4px 3px 0 #f3a7b7;
+            /* 粉紅色陰影 */
+        }
+
+        .heading2-box {
+            border: 6px solid #e6e600;
+            border-style: outset;
+            /* 外層黃色框 */
+            /* padding: 10px 14px;
+            /* 文字和框的距離 */
+            margin-bottom: 54px;
+            /* 和下方 heading3 的距離 */
+        }
+
+        .heading2-inner {
+            border: 3px solid black;
+            /* 內層黑框 */
+            padding: 8px 14px;
+            background: transparent;
+        }
+
+        .heading2 {
+            margin: 0;
+            font-size: 66px;
+            font-style: italic;
+            /* 斜體 */
+            font-weight: bold;
+            line-height: 1;
+
+        }
+
+        .heading3 {
+            margin: 0;
+            font-size: 60px;
+            font-weight: bold;
+            text-decoration: underline;
+            /* 底線 */
+            text-align: right;
+            /* 靠右 */
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="white-box">
+        <h1 class="heading1">This is heading 1</h1>
+
+        <div class="heading2-box">
+            <div class="heading2-inner">
+                <h2 class="heading2">This is heading 2</h2>
+            </div>
+        </div>
+
+        <h3 class="heading3">This is heading 3</h3>
+    </div>
+
+</body>
+
+</html>
