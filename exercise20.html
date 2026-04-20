@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise 20 - Table and Position</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        /* --- 1. CSS 表格設定 --- */
+        table {
+            border-collapse: collapse;
+            /* 折疊表格邊框  */
+            margin: 20px 0;
+        }
+
+        table,
+        th,
+        td {
+            border: 2px solid #555555;
+            /* 設定表格、標題與儲存格的邊框 [cite: 8-11] */
+        }
+
+        th,
+        td {
+            padding: 10px 20px;
+            /* 控制邊框與內容的間距 [cite: 84, 85] */
+            text-align: left;
+            /* 文字靠左對齊 [cite: 57, 69] */
+        }
+
+        /* 表格標題顏色設定 [cite: 108, 109, 112-114] */
+        th {
+            background-color: #808080;
+            /* 灰色背景 */
+            color: white;
+            /* 白色文字 */
+        }
+
+        /* 斑馬紋表格：奇數列設定黃色背景 [cite: 102, 103, 104] */
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        /* 偶數列設定白色背景以防萬一 */
+        tr:nth-child(even) {
+            background-color: #ffff66;
+        }
+
+
+        /* --- 2. CSS 定位設定 --- */
+        div.fixed-box {
+            position: fixed;
+            /* 固定定位，相對於視窗 [cite: 314, 315] */
+            top: 50px;
+            /* 距離頂部 50px [cite: 316] */
+            right: 50px;
+            /* 距離右側 50px [cite: 316] */
+            border: 3px solid #73AD21;
+            /* 綠色邊框 [cite: 325] */
+            padding: 10px;
+            width: 150px;
+            background-color: white;
+            font-family: "Times New Roman", Times, serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <table>
+        <tr>
+            <th>Yu-Qian</th>
+            <th>Su</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>2</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>3</td>
+        </tr>
+    </table>
+
+    <div class="fixed-box">
+        This div<br>
+        element has<br>
+        position: fixed;
+    </div>
+
+</body>
+
+</html>
