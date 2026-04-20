@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS 綜合練習 - 運動科技專欄</title>
+    <style>
+        body {
+            font-family: "Times New Roman", "微軟正黑體", serif;
+            padding: 40px;
+            background-color: #f4f4f4;
+        }
+
+        /* 模擬圖片中的白色文件底板與陰影 */
+        .article-container {
+            background-color: white;
+            padding: 30px;
+            border: 1px solid #ddd;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            margin: auto;
+            line-height: 1.6;
+            font-size: 18px;
+            text-align: justify;
+            /* 左右對齊 */
+        }
+
+        /* --- 1. Float 與 Overflow 區塊 --- */
+        .float-box {
+            float: right;
+            width: 140px;
+            height: 150px;
+            /* 限制高度，迫使捲軸出現 */
+            overflow: auto;
+            /* 當內容超過高度時自動產生捲軸 */
+            border: 4px solid #73AD21;
+            padding: 10px;
+            margin-left: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            background-color: white;
+        }
+
+        /* --- 2. Inline-block 區塊 --- */
+        .highlight-word {
+            display: inline-block;
+            /* 設為 inline-block */
+            background-color: yellow;
+            /* 黃色背景 */
+            border: 1px solid blue;
+            /* 藍色邊框 */
+            padding: 0px 5px;
+            margin: 0px 2px;
+            color: black;
+        }
+
+        /* 清除浮動的 Hack [cite: 569-574] */
+        .clearfix::after {
+            content: "";
+            display: block;
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="article-container clearfix">
+
+        <div class="float-box">
+            A float div with overflow auto. <br><br>
+            這是一個向右浮動的區塊。在運動科學的應用中，這類側邊欄常被用來顯示即時的生理指標或系統日誌。設定固定的高度與捲軸，可以確保即使資料不斷湧入，也不會干擾主畫面的版面配置。
+        </div>
+
+        (科技專欄) 近年來，資訊科技與運動科學的結合為日常訓練帶來了革命性的改變。透過先進的
+        <span class="highlight-word">穿戴式裝置</span>
+        ，運動員與一般民眾都能輕鬆記錄自己的運動軌跡與生理反應。這些設備不僅能收集海量的
+        <span class="highlight-word">數據</span>
+        ，還能透過雲端運算與機器學習模型，提供個人化的訓練建議。專家指出，未來的運動科技將更加依賴精準的
+        <span class="highlight-word">演算法</span>
+        來預測運動傷害並提升表現。從日常的深蹲動作辨識到專業的田徑表現分析，這股數位化浪潮正悄悄改變我們對於「健康管理」的認知。透過良好的軟體工程思維來優化這些系統，將是推動下一波運動產業創新的關鍵。
+
+    </div>
+
+</body>
+
+</html>
