@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Demo My First Bootstrap Page</title>
+
+    <!-- Bootstrap 3 CSS，要放在 head 裡面 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <style>
+        body {
+            padding-top: 40px;
+            background-color: #f5f5f5;
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        .container {
+            background-color: white;
+            padding: 25px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .jumbotron {
+            background-color: #eeeeee;
+            border-radius: 10px;
+        }
+
+        .custom-section {
+            margin-top: 25px;
+        }
+
+        .badge {
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        /* 一開始先把 alert 隱藏 */
+        #successAlert {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- A div with class="container" -->
+    <div class="container">
+
+        <!-- A div with class="jumbotron" -->
+        <div class="jumbotron">
+            <h1>My First Bootstrap Page</h1>
+            <p>Explore beautiful attractions in Taiwan.</p>
+        </div>
+
+        <div class="custom-section">
+            <label for="placeInput">Input:</label>
+
+            <!-- An input with type="text", class="form-control" -->
+            <input type="text" class="form-control" id="placeInput"
+                placeholder="Please enter your favorite Taiwan attraction">
+        </div>
+
+        <div class="custom-section">
+            <!-- A div with class="alert alert-success" -->
+            <div id="successAlert" class="alert alert-success">
+                Successful alert：Your favorite Taiwan attraction has been submitted!
+            </div>
+        </div>
+
+        <div class="custom-section">
+            <!-- A button with class="btn btn-default" -->
+            <button type="button" id="submitBtn" class="btn btn-default">
+                Submit
+            </button>
+
+            <!-- A span with class="badge" -->
+            <span class="badge">Taiwan</span>
+        </div>
+
+    </div>
+
+    <script>
+        const submitBtn = document.getElementById("submitBtn");
+        const successAlert = document.getElementById("successAlert");
+
+        submitBtn.addEventListener("click", function () {
+            successAlert.style.display = "block";
+        });
+    </script>
+
+</body>
+
+</html>
