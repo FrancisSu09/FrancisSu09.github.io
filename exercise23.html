@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Information Demo</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: Roboto, Arial, sans-serif;
+            background-color: #f6f6f6;
+            color: #2f2f2f;
+        }
+
+        .container {
+            width: 520px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border: 1px solid #eaeaea;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            height: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 12px;
+        }
+
+        .title {
+            font-size: 13px;
+            color: #707070;
+        }
+
+        /* 指定按鈕樣式 */
+        .info-btn {
+            height: 22px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            border: 1px solid #2f2f2f;
+            color: #2f2f2f;
+            font-family: Roboto, Arial, sans-serif;
+            font-size: 13px;
+            padding: 0 12px;
+            cursor: pointer;
+            line-height: 20px;
+        }
+
+        .info-btn:hover {
+            background-color: #f3f3f3;
+        }
+
+        .image-wrapper {
+            width: 496px;
+            background-color: #ffe2bd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+
+        .preview-image {
+            width: 450px;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .detail-info {
+            display: none;
+            margin-top: 12px;
+            padding: 10px;
+            background-color: #e3ffe1;
+            border: 1px solid #cdfddf;
+            font-size: 13px;
+            color: #2f2f2f;
+            line-height: 1.6;
+        }
+
+        .detail-info p {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">預覽</div>
+            <button id="infoBtn" class="info-btn">查看資訊</button>
+        </div>
+
+        <div class="image-wrapper">
+            <img class="preview-image" src="https://ncusec.ncu.edu.tw/news/thumbs/1141002_01_20251002-1.jpg"
+                alt="Preview Image" />
+        </div>
+
+        <div id="detailInfo" class="detail-info">
+            <p>National Central University (NCU)</p>
+            <p>A public research university in Zhongli, Taoyuan City, Taiwan.</p>
+            <li> Founded in 1915 in Nanking, it was reestablished in Taiwan in 1968 after the Chinese Civil War and
+                gained
+                its current name in 1979.</li>
+            <li> The university is organized into eight colleges, 26 departments, 19 graduate institutes, and six
+                research
+                centers.</li>
+            <li> It is one of the six national universities in research selected by the Ministry of Education.</li>
+        </div>
+    </div>
+
+    <script>
+        const infoBtn = document.getElementById("infoBtn");
+        const detailInfo = document.getElementById("detailInfo");
+
+        infoBtn.addEventListener("click", function () {
+            const isHidden = detailInfo.style.display === "" || detailInfo.style.display === "none";
+
+            if (isHidden) {
+                detailInfo.style.display = "block";
+                infoBtn.textContent = "收起資訊";
+            } else {
+                detailInfo.style.display = "none";
+                infoBtn.textContent = "查看資訊";
+            }
+        });
+    </script>
+</body>
+
+</html>
