@@ -117,9 +117,24 @@
         <div id="company-page" class="page-section hidden">
             <h2>企業健康數據總覽</h2>
             <p class="center-muted">以下為公司層級匿名統計，企業端不顯示員工個人健檢明細。</p>
-            <div class="year-toolbar">
+            <div class="year-toolbar company-filters">
                 <label for="companyYearSelect">統計年度</label>
                 <select id="companyYearSelect"></select>
+                <label for="companyGenderSelect">性別</label>
+                <select id="companyGenderSelect">
+                    <option value="all">全體</option>
+                    <option value="M">男</option>
+                    <option value="F">女</option>
+                </select>
+                <label for="companyAgeGroupSelect">年齡層</label>
+                <select id="companyAgeGroupSelect">
+                    <option value="all">全體</option>
+                    <option value="under30">30歲以下</option>
+                    <option value="31-40">31~40歲</option>
+                    <option value="41-50">41~50歲</option>
+                    <option value="51-60">51~60歲</option>
+                    <option value="61plus">61歲以上</option>
+                </select>
             </div>
 
             <div class="summary-grid" id="companySummaryGrid"></div>

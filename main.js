@@ -74,6 +74,8 @@ let currentSession = null;
 let currentEmployee = null;
 let selectedEmployeeYear = null;
 let selectedCompanyYear = null;
+let selectedCompanyGender = "all";
+let selectedCompanyAgeGroup = "all";
 
 document.addEventListener("DOMContentLoaded", () => {
     bindAuth();
@@ -133,6 +135,20 @@ function bindYearFilters() {
             renderCompanyDashboard(currentSession.companyId, selectedCompanyYear);
         }
     });
+
+    document.getElementById("companyGenderSelect").addEventListener("change", event => {
+        selectedCompanyGender = event.target.value;
+        if (currentSession?.role === "enterprise") {
+            renderCompanyDashboard(currentSession.companyId, selectedCompanyYear);
+        }
+    });
+
+    document.getElementById("companyAgeGroupSelect").addEventListener("change", event => {
+        selectedCompanyAgeGroup = event.target.value;
+        if (currentSession?.role === "enterprise") {
+            renderCompanyDashboard(currentSession.companyId, selectedCompanyYear);
+        }
+    });
 }
 
 function updateAuthHint() {
@@ -176,7 +192,11 @@ function handleAuthLogin() {
     if (account.role === "enterprise") {
         currentEmployee = null;
         selectedCompanyYear = getAvailableYears().at(-1);
+        selectedCompanyGender = "all";
+        selectedCompanyAgeGroup = "all";
         populateYearSelect("companyYearSelect", getAvailableYears(), selectedCompanyYear);
+        document.getElementById("companyGenderSelect").value = selectedCompanyGender;
+        document.getElementById("companyAgeGroupSelect").value = selectedCompanyAgeGroup;
         renderCompanyDashboard(account.companyId, selectedCompanyYear);
         showPage("company-page");
     } else {
@@ -229,6 +249,31 @@ function getEmployeeYears(employeeId) {
 
 function getAvailableYears() {
     return [...new Set(database.healthCheckRecords.map(record => record.year))].sort((a, b) => a - b);
+}
+
+function getCompanyFilters() {
+    return {
+        gender: selectedCompanyGender,
+        ageGroup: selectedCompanyAgeGroup
+    };
+}
+
+function getCompanyEmployees(companyId, filters = getCompanyFilters()) {
+    return database.employeeInfo.filter(employee => {
+        const isSameCompany = employee.companyId === companyId;
+        const isGenderMatched = filters.gender === "all" || employee.gender === filters.gender;
+        const isAgeMatched = filters.ageGroup === "all" || matchAgeGroup(employee.age, filters.ageGroup);
+        return isSameCompany && isGenderMatched && isAgeMatched;
+    });
+}
+
+function matchAgeGroup(age, ageGroup) {
+    if (ageGroup === "under30") return age <= 30;
+    if (ageGroup === "31-40") return age >= 31 && age <= 40;
+    if (ageGroup === "41-50") return age >= 41 && age <= 50;
+    if (ageGroup === "51-60") return age >= 51 && age <= 60;
+    if (ageGroup === "61plus") return age >= 61;
+    return true;
 }
 
 function populateYearSelect(selectId, years, selectedYear) {
@@ -475,26 +520,29 @@ function renderBenefits() {
 }
 
 function renderCompanyDashboard(companyId, year = selectedCompanyYear || getAvailableYears().at(-1)) {
-    const employees = database.employeeInfo.filter(employee => employee.companyId === companyId);
+    const filters = getCompanyFilters();
+    const employees = getCompanyEmployees(companyId, filters);
     const analyses = employees.map(employee => analyzeEmployee(employee, year));
     const total = employees.length;
     const highRisk = analyses.filter(analysis => analysis.riskCount > 0).length;
     const metabolic = analyses.filter(analysis => analysis.riskCount >= 3).length;
-    const averageRisk = analyses.reduce((sum, analysis) => sum + analysis.riskCount, 0) / total;
+    const averageRisk = total > 0
+        ? analyses.reduce((sum, analysis) => sum + analysis.riskCount, 0) / total
+        : 0;
 
     renderSummaryCards([
         { label: "員工總數", value: total, note: `納入 ${year} 年健檢` },
-        { label: "高風險比例", value: formatPercent(highRisk / total), note: "至少 1 項異常" },
-        { label: "代謝症候群", value: formatPercent(metabolic / total), note: `${metabolic} 位需介入` },
+        { label: "高風險比例", value: total > 0 ? formatPercent(highRisk / total) : "0%", note: "至少 1 項異常" },
+        { label: "代謝症候群", value: total > 0 ? formatPercent(metabolic / total) : "0%", note: `${metabolic} 位需介入` },
         { label: "平均異常項", value: averageRisk.toFixed(1), note: "五項指標平均" }
     ]);
     renderCompanyRiskDonut(analyses);
-    renderCompanyYearTrend(companyId);
-    renderCompanyYearComparison(companyId, year);
+    renderCompanyYearTrend(companyId, filters);
+    renderCompanyYearComparison(companyId, year, filters);
     renderRiskBars(analyses);
     renderDepartmentRiskChart(analyses);
     renderDepartmentTable(analyses);
-    renderCourseUsage();
+    renderCourseUsage(employees);
 }
 
 function renderSummaryCards(cards) {
@@ -518,6 +566,11 @@ function renderSummaryCards(cards) {
 function renderRiskBars(analyses) {
     const container = document.getElementById("riskBars");
     container.replaceChildren();
+
+    if (analyses.length === 0) {
+        renderEmptyState(container, "此篩選條件沒有風險指標資料。");
+        return;
+    }
 
     riskRules.forEach(rule => {
         const count = analyses.filter(analysis =>
@@ -547,6 +600,16 @@ function renderDepartmentTable(analyses) {
     const departments = groupBy(analyses, analysis => analysis.employee.department);
     table.replaceChildren();
 
+    if (analyses.length === 0) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 5;
+        td.textContent = "此篩選條件沒有部門資料。";
+        tr.append(td);
+        table.append(tr);
+        return;
+    }
+
     Object.entries(departments).forEach(([department, rows]) => {
         const tr = document.createElement("tr");
         const highRisk = rows.filter(row => row.riskCount > 0).length;
@@ -575,9 +638,15 @@ function renderCompanyRiskDonut(analyses) {
     ], `${danger} 人`, "需介入");
 }
 
-function renderCompanyYearTrend(companyId) {
-    const employees = database.employeeInfo.filter(employee => employee.companyId === companyId);
+function renderCompanyYearTrend(companyId, filters = getCompanyFilters()) {
+    const employees = getCompanyEmployees(companyId, filters);
     const years = getAvailableYears();
+
+    if (employees.length === 0) {
+        renderEmptyState(document.getElementById("companyYearTrend"), "此篩選條件沒有年度趨勢資料。");
+        return;
+    }
+
     const highRiskRates = years.map(year => {
         const analyses = employees.map(employee => analyzeEmployee(employee, year));
         return Math.round(analyses.filter(analysis => analysis.riskCount > 0).length / analyses.length * 100);
@@ -598,16 +667,26 @@ function renderDepartmentRiskChart(analyses) {
     const departments = groupBy(analyses, analysis => analysis.employee.department);
     container.replaceChildren();
 
+    if (analyses.length === 0) {
+        renderEmptyState(container, "此篩選條件沒有部門圖表資料。");
+        return;
+    }
+
     Object.entries(departments).forEach(([department, rows]) => {
         const averageRisk = rows.reduce((sum, row) => sum + row.riskCount, 0) / rows.length;
         container.append(createBarRow(department, averageRisk / 5 * 100, averageRisk.toFixed(1), averageRisk >= 3 ? "risk" : "safe"));
     });
 }
 
-function renderCompanyYearComparison(companyId, year) {
+function renderCompanyYearComparison(companyId, year, filters = getCompanyFilters()) {
     const container = document.getElementById("companyYoYComparison");
     const previousYear = getAvailableYears().filter(item => item < year).at(-1);
     container.replaceChildren();
+
+    if (getCompanyEmployees(companyId, filters).length === 0) {
+        renderEmptyState(container, "此篩選條件沒有可比較資料。");
+        return;
+    }
 
     if (!previousYear) {
         const empty = document.createElement("p");
@@ -617,8 +696,8 @@ function renderCompanyYearComparison(companyId, year) {
         return;
     }
 
-    const currentStats = getCompanyYearStats(companyId, year);
-    const previousStats = getCompanyYearStats(companyId, previousYear);
+    const currentStats = getCompanyYearStats(companyId, year, filters);
+    const previousStats = getCompanyYearStats(companyId, previousYear, filters);
 
     [
         { label: "高風險比例", key: "highRiskRate", max: 100, unit: "%" },
@@ -639,11 +718,21 @@ function renderCompanyYearComparison(companyId, year) {
     });
 }
 
-function getCompanyYearStats(companyId, year) {
-    const employees = database.employeeInfo.filter(employee => employee.companyId === companyId);
+function getCompanyYearStats(companyId, year, filters = getCompanyFilters()) {
+    const employees = getCompanyEmployees(companyId, filters);
     const analyses = employees.map(employee => analyzeEmployee(employee, year));
     const records = analyses.map(analysis => analysis.latestRecord);
     const total = analyses.length;
+
+    if (total === 0) {
+        return {
+            highRiskRate: 0,
+            metabolicRate: 0,
+            averageRisk: 0,
+            averageWaist: 0,
+            averageGlucose: 0
+        };
+    }
 
     return {
         highRiskRate: analyses.filter(analysis => analysis.riskCount > 0).length / total * 100,
@@ -654,12 +743,16 @@ function getCompanyYearStats(companyId, year) {
     };
 }
 
-function renderCourseUsage() {
+function renderCourseUsage(employees) {
     const grid = document.getElementById("courseUsageGrid");
+    const employeeIds = new Set(employees.map(employee => employee.employeeId));
     grid.replaceChildren();
 
     database.exerciseCourses.forEach(course => {
-        const count = database.courseBookings.filter(booking => booking.courseId === course.courseId).length;
+        const count = database.courseBookings.filter(booking =>
+            booking.courseId === course.courseId &&
+            employeeIds.has(booking.employeeId)
+        ).length;
         const card = document.createElement("div");
         card.className = "benefit-category";
         const title = document.createElement("h3");
@@ -672,6 +765,14 @@ function renderCourseUsage() {
         card.append(title, coach, usage);
         grid.append(card);
     });
+}
+
+function renderEmptyState(container, message) {
+    container.replaceChildren();
+    const empty = document.createElement("p");
+    empty.className = "center-muted empty-state";
+    empty.textContent = message;
+    container.append(empty);
 }
 
 function getRiskDistancePercent(employee, record, key) {
