@@ -9,26 +9,59 @@
 </head>
 
 <body>
-
-    <nav class="navbar">
-        <div class="logo" onclick="showPage('home-page')">🌿 iHealth 企業永續健康平台</div>
-        <button class="nav-btn" onclick="showPage('home-page')">回首頁</button>
+    <nav id="appNavbar" class="navbar hidden">
+        <div class="logo" data-page="home-page">🌿 iHealth 企業永續健康平台</div>
+        <div class="nav-actions">
+            <button class="nav-btn employee-only" type="button" data-page="home-page">回首頁</button>
+            <button class="nav-btn employee-only" type="button" data-page="benefits-page">健康福利</button>
+            <button class="nav-btn employee-only" type="button" data-page="query-page">健康查詢</button>
+            <button class="nav-btn enterprise-only hidden" type="button" data-page="company-page">企業總覽</button>
+            <button id="logoutBtn" class="nav-btn" type="button">登出</button>
+        </div>
     </nav>
 
     <div class="container">
+        <div id="auth-page" class="page-section active">
+            <div class="hero-section">
+                <h1>iHealth 企業永續健康平台</h1>
+                <p>請先登入，系統會依帳號權限導向員工個人健康服務或企業 ESG 健康數據總覽。</p>
+            </div>
 
-        <div id="home-page" class="page-section active">
+            <div class="role-switch" aria-label="登入身份切換">
+                <button class="role-card active" type="button" data-role="employee">
+                    員工登入
+                    <span>查看個人健檢、福利與介入計畫</span>
+                </button>
+                <button class="role-card" type="button" data-role="enterprise">
+                    企業登入
+                    <span>查看公司整體健康風險統整</span>
+                </button>
+            </div>
+
+            <form id="authForm" class="login-section auth-form">
+                <h2 id="authTitle">員工帳號登入</h2>
+                <label for="accountId">帳號</label>
+                <input type="text" id="accountId" autocomplete="username" value="E001">
+                <label for="password">密碼</label>
+                <input type="password" id="password" autocomplete="current-password" value="1234">
+                <button class="btn-primary form-btn" type="submit">登入</button>
+                <p id="authHint" class="hint-text">測試員工：E001 / 1234，也可使用 E002 / 1234、E003 / 1234。</p>
+                <p id="authError" class="form-error" role="alert"></p>
+            </form>
+        </div>
+
+        <div id="home-page" class="page-section hidden">
             <div class="hero-section">
                 <h1>守護員工健康，落實 ESG 企業永續</h1>
                 <p>我們深信，員工是企業最寶貴的資產。響應聯合國 SDGs 目標「良好健康與福祉」，本公司致力於打造全方位的健康職場環境，從日常飲食、運動習慣到醫療數據追蹤，與您一起啟動健康生活。</p>
             </div>
 
             <div class="action-buttons">
-                <button class="btn-large btn-primary" onclick="showPage('benefits-page')">
+                <button class="btn-large btn-primary" type="button" data-page="benefits-page">
                     🎁 公司健康運動福利
                     <span>查看合作廠商與專屬優惠</span>
                 </button>
-                <button class="btn-large btn-secondary" onclick="showPage('query-page')">
+                <button class="btn-large btn-secondary" type="button" data-page="query-page">
                     🔍 員工健康查詢系統
                     <span>查看年度健檢與 iHealth 介入計畫</span>
                 </button>
@@ -37,67 +70,115 @@
 
         <div id="benefits-page" class="page-section hidden">
             <h2>公司健康運動福利</h2>
-            <p style="text-align:center; color:#666;">點擊廠商卡片查看詳細福利內容</p>
-
-            <div class="benefits-grid">
-                <div class="benefit-category">
-                    <h3>🥗 健康飲食</h3>
-                    <div class="partner-card" onclick="showModal('健康餐盒聯盟', '憑員工證享全品項 85 折，訂閱包月方案加贈防彈咖啡。')">健康餐盒聯盟</div>
-                    <div class="partner-card" onclick="showModal('無毒小農市集', '每週五公司大廳駐點，員工專屬 9 折優惠。')">無毒小農市集</div>
-                </div>
-
-                <div class="benefit-category">
-                    <h3>🏋️ 運動健身</h3>
-                    <div class="partner-card" onclick="showModal('Anytime Fitness', '免入會費，月費企業專案價 $999。')">Anytime
-                        Fitness</div>
-                    <div class="partner-card" onclick="showModal('公司內部健身房', '免費使用，並可預約駐點教練諮詢。')">公司內部健身房</div>
-                </div>
-
-                <div class="benefit-category">
-                    <h3>⚾ 賽事觀賞</h3>
-                    <div class="partner-card" onclick="showModal('中華職棒', '每月發放限量 VIP 貴賓室門票抽籤資格。')">中華職棒賽事</div>
-                    <div class="partner-card" onclick="showModal('P. LEAGUE+', '季後賽門票優先購買權及 9 折優惠。')">P. LEAGUE+ 籃球
-                    </div>
-                </div>
-            </div>
+            <p class="center-muted">點擊福利卡片查看詳細內容</p>
+            <div id="benefitsGrid" class="benefits-grid"></div>
         </div>
 
         <div id="query-page" class="page-section hidden">
-            <div id="loginArea" class="login-section">
-                <h2>員工健康查詢系統</h2>
-                <input type="text" id="empId" placeholder="請輸入工號 (測試請輸入: E001)" value="E001">
-                <input type="text" id="empName" placeholder="請輸入姓名 (測試請輸入: 王小明)" value="王小明">
-                <button class="btn-primary" style="width: 100%; padding: 10px;" onclick="handleLogin()">登入查詢</button>
-            </div>
-
-            <div id="dashboard" class="hidden">
+            <div id="dashboard">
                 <h2 id="welcomeMsg"></h2>
+                <p id="employeeMeta" class="center-muted"></p>
+                <div class="year-toolbar">
+                    <label for="employeeYearSelect">報告年度</label>
+                    <select id="employeeYearSelect"></select>
+                </div>
                 <div id="healthStatus" class="status-alert"></div>
 
-                <h3>最新健檢數據 (與標準比對)</h3>
-                <div class="metrics-grid" id="metricsGrid">
+                <h3>年度健檢數據 (與標準比對)</h3>
+                <div class="metrics-grid" id="metricsGrid"></div>
+
+                <h3>年度圖表分析</h3>
+                <div class="chart-grid">
+                    <section class="chart-panel">
+                        <h4>異常項目比例</h4>
+                        <div id="employeeRiskDonut" class="donut-chart"></div>
+                    </section>
+                    <section class="chart-panel">
+                        <h4>五項指標距離警戒值</h4>
+                        <div id="employeeMetricBars" class="mini-bar-chart"></div>
+                    </section>
+                    <section class="chart-panel chart-wide">
+                        <h4>歷年風險趨勢</h4>
+                        <div id="employeeTrendChart" class="line-chart"></div>
+                    </section>
                 </div>
+
+                <h3>歷年健檢趨勢</h3>
+                <div class="trend-grid" id="trendGrid"></div>
 
                 <div id="bookingArea" class="booking-section hidden">
                     <h3>專屬健康介入計畫 (iHealth)</h3>
-                    <p>本週剩餘免費教練課：<strong id="freeClasses" style="color: #2E8B57; font-size: 1.2em;">2</strong> 次</p>
-
-                    <div class="coach-card">
-                        <div>
-                            <strong>李教練 (阻力訓練/減脂)</strong><br>
-                            <span style="color:#666; font-size:0.9em;">可預約時段：週三 18:30, 週五 19:00</span>
-                        </div>
-                        <button class="btn-primary" onclick="bookClass()">立即預約</button>
-                    </div>
+                    <p>本週剩餘免費健康資源：<strong id="freeClasses" class="quota-text">0</strong> 次</p>
+                    <div id="courseGrid" class="course-grid"></div>
                 </div>
             </div>
         </div>
 
+        <div id="company-page" class="page-section hidden">
+            <h2>企業健康數據總覽</h2>
+            <p class="center-muted">以下為公司層級匿名統計，企業端不顯示員工個人健檢明細。</p>
+            <div class="year-toolbar">
+                <label for="companyYearSelect">統計年度</label>
+                <select id="companyYearSelect"></select>
+            </div>
+
+            <div class="summary-grid" id="companySummaryGrid"></div>
+
+            <div class="company-layout">
+                <section class="company-panel">
+                    <h3>年度風險趨勢</h3>
+                    <div id="companyYearTrend" class="line-chart"></div>
+                </section>
+
+                <section class="company-panel">
+                    <h3>與前一年比較</h3>
+                    <div id="companyYoYComparison" class="comparison-chart"></div>
+                </section>
+
+                <section class="company-panel">
+                    <h3>風險分層占比</h3>
+                    <div id="companyRiskDonut" class="donut-chart"></div>
+                </section>
+
+                <section class="company-panel">
+                    <h3>風險指標分布</h3>
+                    <div id="riskBars" class="bar-list"></div>
+                </section>
+
+                <section class="company-panel">
+                    <h3>部門平均異常項</h3>
+                    <div id="departmentRiskChart" class="bar-list"></div>
+                </section>
+
+                <section class="company-panel company-panel-wide">
+                    <h3>部門風險統計</h3>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>部門</th>
+                                    <th>員工數</th>
+                                    <th>高風險</th>
+                                    <th>代謝症候群</th>
+                                    <th>平均異常項</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departmentTable"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <section class="company-panel">
+                <h3>運動健康課程資源使用率</h3>
+                <div id="courseUsageGrid" class="benefits-grid"></div>
+            </section>
+        </div>
     </div>
 
     <div id="infoModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <button id="modalCloseBtn" class="close-btn" type="button" aria-label="關閉">&times;</button>
             <h2 id="modalTitle">廠商名稱</h2>
             <p id="modalDesc">福利詳情內容...</p>
         </div>
