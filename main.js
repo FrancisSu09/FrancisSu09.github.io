@@ -1,6 +1,7 @@
 "use strict";
 
 const HEALTH_DATA_URL = "data/processed/ihealth_employee_health.json";
+const CHAT_API_URL = "/api/chat";
 
 function googleMapsUrl(query) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -189,6 +190,7 @@ let selectedEmployeeYear = null;
 let selectedCompanyYear = null;
 let selectedCompanyGender = "all";
 let selectedCompanyAgeGroup = "all";
+let chatbotLoadingMessage = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadExternalHealthData();
@@ -196,6 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindNavigation();
     bindModal();
     bindYearFilters();
+    bindChatbot();
     renderBenefits();
 });
 
@@ -382,6 +385,8 @@ function handleAuthLogin() {
         renderEmployeeDashboard(currentEmployee, selectedEmployeeYear);
         showPage("home-page");
     }
+
+    showChatbotForSession(account.role);
 }
 
 function logout() {
@@ -389,6 +394,7 @@ function logout() {
     currentEmployee = null;
     document.getElementById("appNavbar").classList.add("hidden");
     document.getElementById("authError").textContent = "";
+    hideChatbot();
     showPage("auth-page");
 }
 
@@ -409,8 +415,347 @@ function showPage(pageId) {
     targetPage.classList.add("active");
 }
 
+function bindChatbot() {
+    const toggleButton = document.getElementById("chatbotToggleBtn");
+    const closeButton = document.getElementById("chatbotCloseBtn");
+    const form = document.getElementById("chatbotForm");
+
+    toggleButton.addEventListener("click", () => {
+        const panel = document.getElementById("chatbotPanel");
+        setChatbotOpen(panel.classList.contains("hidden"));
+    });
+
+    closeButton.addEventListener("click", () => setChatbotOpen(false));
+
+    form.addEventListener("submit", event => {
+        event.preventDefault();
+        handleChatbotSubmit();
+    });
+}
+
+function showChatbotForSession(role) {
+    const widget = document.getElementById("chatbotWidget");
+    const subtitle = document.getElementById("chatbotSubtitle");
+    const input = document.getElementById("chatbotInput");
+    widget.classList.remove("hidden");
+    resetChatbot();
+
+    if (role === "enterprise") {
+        subtitle.textContent = "Anonymous corporate wellness insights";
+        input.placeholder = "Ask about company wellness trends or programs";
+        appendChatbotMessage("你好，我會根據企業端匿名統計，協助整理健康趨勢、課程配置與 ESG 健康管理建議。", "bot");
+        return;
+    }
+
+    const displayName = getEmployeeDisplayName(currentEmployee);
+    subtitle.textContent = `${displayName}'s health coach`;
+    input.placeholder = "Ask about exercise, diet, or your health report";
+    appendChatbotMessage(`Hi ${displayName}，我可以根據你的歷年健檢趨勢，提供運動、飲食、課程與合作店家的建議。`, "bot");
+}
+
+function hideChatbot() {
+    document.getElementById("chatbotWidget").classList.add("hidden");
+    setChatbotOpen(false);
+    resetChatbot();
+}
+
+function resetChatbot() {
+    const messages = document.getElementById("chatbotMessages");
+    const error = document.getElementById("chatbotError");
+    const input = document.getElementById("chatbotInput");
+    messages.replaceChildren();
+    error.textContent = "";
+    input.value = "";
+    chatbotLoadingMessage = null;
+    setChatbotLoading(false);
+}
+
+function setChatbotOpen(isOpen) {
+    const panel = document.getElementById("chatbotPanel");
+    const toggleButton = document.getElementById("chatbotToggleBtn");
+    panel.classList.toggle("hidden", !isOpen);
+    toggleButton.setAttribute("aria-expanded", String(isOpen));
+}
+
+function setChatbotLoading(isLoading) {
+    document.getElementById("chatbotInput").disabled = isLoading;
+    document.getElementById("chatbotSendBtn").disabled = isLoading;
+}
+
+function appendChatbotMessage(text, sender, options = {}) {
+    const messages = document.getElementById("chatbotMessages");
+    const message = document.createElement("div");
+    message.className = `chatbot-message chatbot-message-${sender}`;
+    if (options.loading) message.classList.add("chatbot-message-loading");
+    message.textContent = text;
+    messages.append(message);
+    messages.scrollTop = messages.scrollHeight;
+    return message;
+}
+
+async function handleChatbotSubmit() {
+    if (!currentSession || chatbotLoadingMessage) return;
+
+    const input = document.getElementById("chatbotInput");
+    const error = document.getElementById("chatbotError");
+    const question = input.value.trim();
+    if (!question) return;
+
+    error.textContent = "";
+    input.value = "";
+    appendChatbotMessage(question, "user");
+    chatbotLoadingMessage = appendChatbotMessage("正在整理你的健康資料並產生建議...", "bot", { loading: true });
+    setChatbotLoading(true);
+
+    try {
+        const response = await fetch(CHAT_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                role: currentSession.role,
+                message: question,
+                context: buildChatContext(question)
+            })
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(payload.error || "AI Coach 暫時無法回覆，請稍後再試。");
+        }
+
+        removeChatbotLoadingMessage();
+        appendChatbotMessage(payload.reply || "AI Coach 暫時沒有產生內容，請換個方式再問一次。", "bot");
+    } catch (errorObject) {
+        removeChatbotLoadingMessage();
+        error.textContent = errorObject.message || "AI Coach 暫時無法回覆，請稍後再試。";
+    } finally {
+        setChatbotLoading(false);
+    }
+}
+
+function removeChatbotLoadingMessage() {
+    if (!chatbotLoadingMessage) return;
+    chatbotLoadingMessage.remove();
+    chatbotLoadingMessage = null;
+}
+
+function buildChatContext(question) {
+    if (currentSession?.role === "enterprise") {
+        return buildEnterpriseChatContext(question);
+    }
+    return buildEmployeeChatContext(question);
+}
+
+function buildEmployeeChatContext(question) {
+    const employee = currentEmployee;
+    const displayName = getEmployeeDisplayName(employee);
+    const history = getHealthHistory(employee.employeeId);
+    const selectedYear = selectedEmployeeYear || history.at(-1)?.year;
+    const analysis = analyzeEmployee(employee, selectedYear);
+    const riskKeys = analysis.checks.filter(check => check.isRisk).map(check => check.key);
+
+    return {
+        mode: "employee",
+        userQuestion: question,
+        privacy: "Use displayName only. Do not use Chinese personal names.",
+        displayName,
+        profile: {
+            age: employee.age,
+            gender: employee.gender,
+            department: employee.department,
+            freeClasses: employee.freeClasses
+        },
+        selectedYear: analysis.year,
+        latestRecord: summarizeHealthRecord(analysis.latestRecord),
+        currentRisk: {
+            level: analysis.level,
+            riskCount: analysis.riskCount,
+            riskyMetrics: analysis.checks
+                .filter(check => check.isRisk)
+                .map(check => ({ key: check.key, label: check.label, value: check.value }))
+        },
+        history: history.map(record => ({
+            year: record.year,
+            ...summarizeHealthRecord(record),
+            riskCount: analyzeEmployee(employee, record.year).riskCount
+        })),
+        trends: summarizeEmployeeTrends(history),
+        resources: {
+            recommendedCourses: getRecommendedCourses(riskKeys),
+            benefitsAndStores: getCompactBenefits()
+        }
+    };
+}
+
+function buildEnterpriseChatContext(question) {
+    const year = selectedCompanyYear || getAvailableYears().at(-1);
+    const filters = getCompanyFilters();
+    const company = database.companies.find(item => item.companyId === currentSession.companyId);
+    const employees = getCompanyEmployees(currentSession.companyId, filters);
+    const analyses = employees.map(employee => analyzeEmployee(employee, year));
+    const total = analyses.length;
+    const safe = analyses.filter(analysis => analysis.riskCount === 0).length;
+    const caution = analyses.filter(analysis => analysis.riskCount > 0 && analysis.riskCount < 3).length;
+    const danger = analyses.filter(analysis => analysis.riskCount >= 3).length;
+
+    return {
+        mode: "enterprise",
+        userQuestion: question,
+        privacy: "Anonymous aggregate statistics only. Never mention employee names, employee IDs, or individual records.",
+        company: {
+            name: company?.name || currentSession.companyId,
+            industry: company?.industry || "unknown"
+        },
+        filters: {
+            year,
+            gender: filters.gender,
+            ageGroup: filters.ageGroup
+        },
+        summary: {
+            employeeCount: total,
+            safeCount: safe,
+            cautionCount: caution,
+            interventionCount: danger,
+            highRiskRate: total > 0 ? formatPercent((caution + danger) / total) : "0%",
+            interventionRate: total > 0 ? formatPercent(danger / total) : "0%"
+        },
+        yearStats: summarizeCompanyStats(currentSession.companyId, year, filters),
+        riskMetricDistribution: riskRules.map(rule => {
+            const count = analyses.filter(analysis =>
+                analysis.checks.some(check => check.key === rule.key && check.isRisk)
+            ).length;
+            return {
+                key: rule.key,
+                label: rule.label,
+                count,
+                rate: total > 0 ? formatPercent(count / total) : "0%"
+            };
+        }),
+        yearTrend: getAvailableYears().map(item => ({
+            year: item,
+            ...summarizeCompanyStats(currentSession.companyId, item, filters)
+        })),
+        departmentStats: summarizeDepartmentsForEnterprise(analyses),
+        courseUsage: summarizeCourseUsage(employees)
+    };
+}
+
+function summarizeHealthRecord(record) {
+    return {
+        waist: record.waist,
+        bp: `${record.bpS}/${record.bpD}`,
+        glucose: record.glucose,
+        tg: record.tg,
+        hdl: record.hdl,
+        bmi: record.bmi
+    };
+}
+
+function summarizeEmployeeTrends(history) {
+    if (history.length < 2) return [];
+
+    const previous = history.at(-2);
+    const current = history.at(-1);
+    return [
+        { key: "waist", label: "腰圍", unit: "cm" },
+        { key: "glucose", label: "空腹血糖", unit: "mg/dL" },
+        { key: "tg", label: "三酸甘油酯", unit: "mg/dL" },
+        { key: "hdl", label: "HDL膽固醇", unit: "mg/dL" },
+        { key: "bmi", label: "BMI", unit: "" }
+    ].map(metric => ({
+        label: metric.label,
+        previousYear: previous.year,
+        currentYear: current.year,
+        previousValue: previous[metric.key],
+        currentValue: current[metric.key],
+        change: Number((current[metric.key] - previous[metric.key]).toFixed(1)),
+        unit: metric.unit
+    }));
+}
+
+function getRecommendedCourses(riskKeys) {
+    const courses = database.exerciseCourses.filter(course => {
+        if (riskKeys.length === 0) return true;
+        return course.focus.split(",").some(key => riskKeys.includes(key));
+    });
+
+    return courses.slice(0, 4).map(course => ({
+        name: course.name,
+        coach: course.coach,
+        focus: course.focus,
+        schedule: course.schedule,
+        location: course.location,
+        duration: course.duration,
+        description: course.description
+    }));
+}
+
+function getCompactBenefits() {
+    return database.healthBenefits.map(benefit => ({
+        category: benefit.category,
+        name: benefit.name,
+        description: benefit.description,
+        stores: (benefit.stores || []).slice(0, 3).map(store => store.name)
+    }));
+}
+
+function summarizeCompanyStats(companyId, year, filters) {
+    const stats = getCompanyYearStats(companyId, year, filters);
+    return {
+        highRiskRate: `${Math.round(stats.highRiskRate)}%`,
+        metabolicRate: `${Math.round(stats.metabolicRate)}%`,
+        averageRisk: Number(stats.averageRisk.toFixed(1)),
+        averageWaist: Number(stats.averageWaist.toFixed(1)),
+        averageGlucose: Number(stats.averageGlucose.toFixed(1))
+    };
+}
+
+function summarizeDepartmentsForEnterprise(analyses) {
+    const departments = groupBy(analyses, analysis => analysis.employee.department);
+    const rows = Object.entries(departments)
+        .map(([department, rows]) => {
+            const count = rows.length;
+            return {
+                department,
+                employeeCount: count,
+                highRiskRate: formatPercent(rows.filter(row => row.riskCount > 0).length / count),
+                interventionRate: formatPercent(rows.filter(row => row.riskCount >= 3).length / count),
+                averageRisk: Number((rows.reduce((sum, row) => sum + row.riskCount, 0) / count).toFixed(1))
+            };
+        });
+    const publishableRows = rows.filter(row => row.employeeCount >= 5);
+
+    return {
+        rows: publishableRows,
+        suppressedSmallGroups: rows.length - publishableRows.length
+    };
+}
+
+function summarizeCourseUsage(employees) {
+    const employeeIds = new Set(employees.map(employee => employee.employeeId));
+    return database.exerciseCourses.map(course => {
+        const count = database.courseBookings.filter(booking =>
+            booking.courseId === course.courseId &&
+            employeeIds.has(booking.employeeId)
+        ).length;
+
+        return {
+            name: course.name,
+            focus: course.focus,
+            schedule: course.schedule,
+            capacity: course.capacity,
+            currentBookings: count,
+            usageRate: formatPercent(count / course.capacity)
+        };
+    });
+}
+
 function getEmployee(employeeId) {
     return database.employeeInfo.find(employee => employee.employeeId === employeeId);
+}
+
+function getEmployeeDisplayName(employee) {
+    return employee?.englishName || employee?.employeeId || "Employee";
 }
 
 function getHealthHistory(employeeId) {
@@ -489,7 +834,7 @@ function analyzeEmployee(employee, year = getEmployeeYears(employee.employeeId).
 
 function renderEmployeeDashboard(employee, year = selectedEmployeeYear) {
     const analysis = analyzeEmployee(employee, year);
-    document.getElementById("welcomeMsg").textContent = `歡迎，${employee.name}！以下是您的年度健康報告：`;
+    document.getElementById("welcomeMsg").textContent = `歡迎，${getEmployeeDisplayName(employee)}！以下是您的年度健康報告：`;
     document.getElementById("employeeMeta").textContent = `${employee.department}｜${employee.age} 歲｜${employee.gender === "M" ? "男性" : "女性"}`;
     document.getElementById("freeClasses").textContent = employee.freeClasses;
     renderHealthStatus(analysis);

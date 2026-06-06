@@ -191,6 +191,27 @@
         </div>
     </div>
 
+    <div id="chatbotWidget" class="chatbot-widget hidden">
+        <section id="chatbotPanel" class="chatbot-panel hidden" aria-label="iHealth AI Coach">
+            <header class="chatbot-header">
+                <div>
+                    <strong>iHealth AI Coach</strong>
+                    <span id="chatbotSubtitle">Personal health support</span>
+                </div>
+                <button id="chatbotCloseBtn" class="chatbot-icon-btn" type="button" aria-label="關閉聊天">×</button>
+            </header>
+            <div id="chatbotMessages" class="chatbot-messages" role="log" aria-live="polite"></div>
+            <p id="chatbotError" class="chatbot-error" role="alert"></p>
+            <form id="chatbotForm" class="chatbot-form">
+                <input id="chatbotInput" type="text" autocomplete="off" maxlength="500" placeholder="Ask about exercise, diet, or your health report">
+                <button id="chatbotSendBtn" class="btn-primary" type="submit">送出</button>
+            </form>
+        </section>
+        <button id="chatbotToggleBtn" class="chatbot-toggle" type="button" aria-controls="chatbotPanel" aria-expanded="false">
+            AI
+        </button>
+    </div>
+
     <div id="infoModal" class="modal">
         <div class="modal-content">
             <button id="modalCloseBtn" class="close-btn" type="button" aria-label="關閉">&times;</button>
