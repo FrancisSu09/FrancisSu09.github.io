@@ -1,3 +1,3 @@
 window.IHEALTH_CONFIG = {
-    chatApiUrl: ""
+    chatApiUrl: "https://francis-su09-github-io.vercel.app/api/chat"
 };
