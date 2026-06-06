@@ -1,5 +1,11 @@
 "use strict";
 
+const HEALTH_DATA_URL = "data/processed/ihealth_employee_health.json";
+
+function googleMapsUrl(query) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 const database = {
     companies: [
         { companyId: "C001", name: "永續科技股份有限公司", industry: "科技服務", employeeCount: 6 }
@@ -39,18 +45,125 @@ const database = {
         { employeeId: "E006", year: 2026, waist: 87, bpS: 131, bpD: 85, glucose: 103, tg: 162, hdl: 48, bmi: 26.4 }
     ],
     healthBenefits: [
-        { benefitId: "B001", category: "🥗 健康飲食", name: "低 GI 健康餐盒", description: "憑員工證享全品項 85 折，適合血糖與三酸甘油脂需控管者。" },
-        { benefitId: "B002", category: "🥗 健康飲食", name: "營養師線上諮詢", description: "每月 2 次 30 分鐘營養諮詢，依健檢數據調整飲食目標。" },
-        { benefitId: "B003", category: "🏋️ 運動健身", name: "公司內部健身房", description: "免費使用，並可預約駐點教練安排減脂與阻力訓練。" },
-        { benefitId: "B004", category: "🏋️ 運動健身", name: "企業有氧課程", description: "每週二、四下班後開課，適合血壓、血糖與 HDL 風險族群。" },
-        { benefitId: "B005", category: "🧘 壓力支持", name: "EAP 員工協助方案", description: "提供壓力、睡眠與生活型態諮詢，支援長工時與高血壓族群。" },
-        { benefitId: "B006", category: "📈 健康追蹤", name: "血壓自主管理站", description: "辦公室固定點量測，資料只回饋本人，企業端僅看匿名統計。" }
+        {
+            benefitId: "B001",
+            category: "🥗 健康飲食",
+            name: "低 GI 健康餐盒",
+            description: "憑員工證享全品項 85 折，適合血糖與三酸甘油脂需控管者。",
+            stores: [
+                { name: "蛋白盒子健康低卡餐盒-中壢民族店", url: "https://maps.app.goo.gl/hz44oPFtaLbMbdyv7?g_st=ic" },
+                { name: "蛋白盒子健康低卡餐盒-中壢中原店", url: googleMapsUrl("蛋白盒子健康低卡餐盒 中壢中原店") },
+                { name: "SWG Meal 健康餐盒", url: googleMapsUrl("SWG Meal 健康餐盒 桃園市中壢區領航南路四段15號") }
+            ]
+        },
+        {
+            benefitId: "B002",
+            category: "🥗 健康飲食",
+            name: "營養師飲食諮詢",
+            description: "每月 2 次 30 分鐘營養諮詢，依健檢數據調整飲食目標。",
+            stores: [
+                { name: "桃園市政府中壢區衛生所", url: googleMapsUrl("桃園市政府中壢區衛生所 桃園市中壢區溪洲街296號") },
+                { name: "中壢天晟醫院營養諮詢", url: googleMapsUrl("中壢天晟醫院 桃園市中壢區延平路155號") },
+                { name: "敦仁診所", url: googleMapsUrl("敦仁診所 桃園市中壢區忠孝路18號") }
+            ]
+        },
+        {
+            benefitId: "B003",
+            category: "🏋️ 運動健身",
+            name: "公司合作健身房",
+            description: "享年費優惠，並提供減脂與阻力訓練課程體驗。",
+            stores: [
+                { name: "桃園市中壢國民運動中心", url: googleMapsUrl("桃園市中壢國民運動中心 桃園市中壢區三光路350號") },
+                { name: "World Gym 世界健身俱樂部 中壢中原店", url: googleMapsUrl("World Gym 中壢中原店") },
+                { name: "GK成吉思汗健身俱樂部 中壢館", url: googleMapsUrl("GK成吉思汗健身俱樂部 中壢館") }
+            ]
+        },
+        {
+            benefitId: "B004",
+            category: "🏋️ 運動健身",
+            name: "有氧課程合作",
+            description: "每週二、四下班後開課，適合血壓、血糖與 HDL 風險族群。",
+            stores: [
+                { name: "桃園市中壢國民運動中心", url: googleMapsUrl("桃園市中壢國民運動中心 桃園市中壢區三光路350號") },
+                { name: "World Gym 世界健身俱樂部 中壢中原店", url: googleMapsUrl("World Gym 中壢中原店 有氧課程") },
+                { name: "EDS擁抱舞蹈工作室", url: googleMapsUrl("EDS擁抱舞蹈工作室 桃園市中壢區環中東路二段286號") }
+            ]
+        },
+        {
+            benefitId: "B007",
+            category: "👩‍🏫 公司課程",
+            name: "內部免費課程",
+            description: "目前公司內部有開設的多種免費課程，歡迎踴躍參加，點擊課程可查看詳細資訊。更多內容請洽廠護(分機#1123)",
+            type: "courses"
+        },
+        {
+            benefitId: "B005",
+            category: "🧘 壓力支持",
+            name: "EAP 員工協助方案",
+            description: "提供壓力、睡眠與生活型態諮詢，支援長工時與高血壓族群。",
+            stores: [
+                { name: "新晴心理諮商所", url: googleMapsUrl("新晴心理諮商所 桃園市中壢區中北路二段119號") },
+                { name: "芯明心理治療所", url: googleMapsUrl("芯明心理治療所 桃園市中壢區青峰路一段53號") },
+                { name: "日暖微光心理諮商所", url: googleMapsUrl("日暖微光心理諮商所 桃園市中壢區中央西路二段281號") }
+            ]
+        },
+        {
+            benefitId: "B006",
+            category: "📈 健康追蹤",
+            name: "血壓自主管理站",
+            description: "辦公室固定點量測，資料只回饋本人，企業端僅看匿名統計。",
+            stores: [
+                { name: "桃園市政府中壢區衛生所", url: googleMapsUrl("桃園市政府中壢區衛生所 桃園市中壢區溪洲街296號") },
+                { name: "南區老人文康活動中心", url: googleMapsUrl("南區老人文康活動中心 桃園市中壢區林森路90號") },
+                { name: "過嶺社區發展協會", url: googleMapsUrl("過嶺社區發展協會 桃園市中壢區雙福路9號") }
+            ]
+        }
     ],
     exerciseCourses: [
-        { courseId: "C101", name: "阻力訓練與減脂課", coach: "李教練", focus: "waist,hdl,tg", schedule: "週三 18:30 / 週五 19:00", capacity: 16 },
-        { courseId: "C102", name: "血糖友善有氧方案", coach: "周教練", focus: "glucose,bp,hdl", schedule: "週二 18:20 / 週四 18:20", capacity: 20 },
-        { courseId: "C103", name: "營養師餐盤調整課", coach: "陳營養師", focus: "glucose,tg,waist", schedule: "週一 12:30 / 週四 17:30", capacity: 12 },
-        { courseId: "C104", name: "午休正念伸展", coach: "黃老師", focus: "bp", schedule: "週一、三、五 12:10", capacity: 24 }
+        {
+            courseId: "C101",
+            name: "阻力訓練與減脂課",
+            coach: "李教練",
+            focus: "waist,hdl,tg",
+            schedule: "週三 18:30 / 週五 19:00",
+            capacity: 16,
+            description: "以循環式肌力與核心訓練提升基礎代謝，協助腰圍管理與體脂控制。",
+            duration: "60 分鐘",
+            location: "B1 體適能教室"
+        },
+        {
+            courseId: "C102",
+            name: "血糖友善有氧方案",
+            coach: "周教練",
+            focus: "glucose,bp,hdl",
+            schedule: "週二 18:20 / 週四 18:20",
+            capacity: 20,
+            description: "以中低強度有氧搭配間歇節奏，幫助穩定血糖、改善心肺與血壓控制。",
+            duration: "45 分鐘",
+            location: "6F 有氧教室"
+        },
+        {
+            courseId: "C103",
+            name: "營養師餐盤調整課",
+            coach: "陳營養師",
+            focus: "glucose,tg,waist",
+            schedule: "週一 12:30 / 週四 17:30",
+            capacity: 12,
+            description: "從日常餐盤比例、外食選擇與點心替換切入，建立更適合代謝管理的飲食習慣。",
+            duration: "50 分鐘",
+            location: "3F 營養諮詢室"
+        },
+        {
+            courseId: "C104",
+            name: "午休正念伸展",
+            coach: "黃老師",
+            focus: "bp",
+            schedule: "週一、三、五 12:10",
+            capacity: 24,
+            description: "透過呼吸練習、肩頸放鬆與低強度伸展，協助降低午間壓力並恢復專注。",
+            duration: "30 分鐘",
+            location: "5F 瑜伽教室"
+        }
     ],
     courseBookings: [
         { bookingId: "BK001", employeeId: "E001", courseId: "C101", status: "confirmed" },
@@ -77,13 +190,76 @@ let selectedCompanyYear = null;
 let selectedCompanyGender = "all";
 let selectedCompanyAgeGroup = "all";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadExternalHealthData();
     bindAuth();
     bindNavigation();
     bindModal();
     bindYearFilters();
     renderBenefits();
 });
+
+async function loadExternalHealthData() {
+    try {
+        const response = await fetch(HEALTH_DATA_URL, { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        applyExternalHealthData(payload);
+        console.info("Loaded health data", payload.metadata);
+    } catch (error) {
+        console.warn("External health data was not loaded; using built-in demo data.", error);
+    }
+}
+
+function applyExternalHealthData(payload) {
+    if (!payload || !Array.isArray(payload.employeeInfo) || !Array.isArray(payload.healthCheckRecords) || !Array.isArray(payload.userAccounts)) {
+        throw new Error("Invalid health data payload");
+    }
+
+    database.employeeInfo = payload.employeeInfo.map(employee => ({
+        employeeId: employee.employeeId,
+        name: employee.name,
+        englishName: employee.englishName,
+        gender: employee.gender,
+        age: Number(employee.age),
+        department: employee.department,
+        companyId: employee.companyId,
+        freeClasses: Number(employee.freeClasses),
+        sourceSeqns: employee.sourceSeqns
+    }));
+
+    database.healthCheckRecords = payload.healthCheckRecords.map(record => ({
+        recordId: record.recordId,
+        employeeId: record.employeeId,
+        year: Number(record.year),
+        waist: Number(record.waist),
+        bpS: Number(record.bpS),
+        bpD: Number(record.bpD),
+        glucose: Number(record.glucose),
+        tg: Number(record.tg),
+        hdl: Number(record.hdl),
+        bmi: Number(record.bmi),
+        sourceSeqn: record.sourceSeqn,
+        metabolicSyndrome: Number(record.metabolicSyndrome),
+        bpSource: record.bpSource
+    }));
+
+    database.userAccounts = payload.userAccounts.map(account => ({
+        accountId: account.accountId,
+        password: account.password,
+        role: account.role,
+        employeeId: account.employeeId,
+        companyId: account.companyId
+    }));
+
+    database.companies = database.companies.map(company => ({
+        ...company,
+        employeeCount: database.employeeInfo.filter(employee => employee.companyId === company.companyId).length
+    }));
+}
 
 function bindAuth() {
     document.querySelectorAll(".role-card").forEach(button => {
@@ -433,8 +609,9 @@ function renderTrendCards(employeeId, year) {
         value.textContent = `${current} ${metric.unit}`;
         const delta = document.createElement("span");
         delta.className = change <= 0 ? "trend-good" : "trend-risk";
+        const displayChange = Number(Math.abs(change).toFixed(1));
         delta.textContent = previousRecord
-            ? `${previousRecord.year}-${selectedRecord.year} ${change <= 0 ? "下降" : "上升"} ${Math.abs(change)} ${metric.unit}`
+            ? `${previousRecord.year}-${selectedRecord.year} ${change <= 0 ? "下降" : "上升"} ${displayChange} ${metric.unit}`
             : `${selectedRecord.year} 尚無前一年資料`;
 
         card.append(title, value, delta);
@@ -455,7 +632,17 @@ function renderMatchedCourses(analysis) {
 
     matchedCourses.forEach(course => {
         const card = document.createElement("div");
-        card.className = "coach-card";
+        card.className = "coach-card course-detail-card";
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", `查看${course.name}課程資訊`);
+        card.addEventListener("click", () => showCourseModal(course));
+        card.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                showCourseModal(course);
+            }
+        });
 
         const content = document.createElement("div");
         const title = document.createElement("strong");
@@ -469,7 +656,10 @@ function renderMatchedCourses(analysis) {
         button.className = "btn-primary";
         button.type = "button";
         button.textContent = "立即預約";
-        button.addEventListener("click", () => bookCourse(course));
+        button.addEventListener("click", event => {
+            event.stopPropagation();
+            bookCourse(course);
+        });
 
         card.append(content, button);
         courseGrid.append(card);
@@ -511,7 +701,13 @@ function renderBenefits() {
             button.className = "partner-card";
             button.type = "button";
             button.textContent = benefit.name;
-            button.addEventListener("click", () => showModal(benefit.name, benefit.description));
+            button.addEventListener("click", () => {
+                if (benefit.type === "courses") {
+                    showCourseListModal(benefit);
+                    return;
+                }
+                showModal(benefit.name, benefit.description, benefit.stores);
+            });
             group.append(button);
         });
 
@@ -754,7 +950,17 @@ function renderCourseUsage(employees) {
             employeeIds.has(booking.employeeId)
         ).length;
         const card = document.createElement("div");
-        card.className = "benefit-category";
+        card.className = "benefit-category course-detail-card";
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", `查看${course.name}課程資訊`);
+        card.addEventListener("click", () => showCourseModal(course));
+        card.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                showCourseModal(course);
+            }
+        });
         const title = document.createElement("h3");
         title.textContent = course.name;
         const coach = document.createElement("p");
@@ -991,9 +1197,89 @@ function createSvgElement(tagName, attributes, textContent = "") {
     return element;
 }
 
-function showModal(title, description) {
+function showModal(title, description, stores = []) {
+    const modalStores = document.getElementById("modalStores");
     document.getElementById("modalTitle").textContent = title;
     document.getElementById("modalDesc").textContent = description;
+    modalStores.replaceChildren();
+
+    if (stores.length > 0) {
+        const heading = document.createElement("h3");
+        heading.className = "modal-stores-title";
+        heading.textContent = "桃園中壢合作店面";
+
+        const list = document.createElement("ul");
+        list.className = "modal-store-list";
+
+        stores.forEach(store => {
+            const item = document.createElement("li");
+            const link = document.createElement("a");
+            link.href = store.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = store.name;
+            item.append(link);
+            list.append(item);
+        });
+
+        modalStores.append(heading, list);
+    }
+
+    document.getElementById("infoModal").style.display = "block";
+}
+
+function showCourseListModal(benefit) {
+    const modalStores = document.getElementById("modalStores");
+    document.getElementById("modalTitle").textContent = benefit.name;
+    document.getElementById("modalDesc").textContent = benefit.description;
+    modalStores.replaceChildren();
+
+    const heading = document.createElement("h3");
+    heading.className = "modal-stores-title";
+    heading.textContent = "目前開設課程";
+
+    const list = document.createElement("ul");
+    list.className = "modal-store-list";
+
+    database.exerciseCourses.forEach(course => {
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.className = "modal-course-button";
+        button.type = "button";
+        button.textContent = `${course.name}｜${course.coach}`;
+        button.addEventListener("click", () => showCourseModal(course));
+        item.append(button);
+        list.append(item);
+    });
+
+    modalStores.append(heading, list);
+    document.getElementById("infoModal").style.display = "block";
+}
+
+function showCourseModal(course) {
+    const modalStores = document.getElementById("modalStores");
+    document.getElementById("modalTitle").textContent = course.name;
+    document.getElementById("modalDesc").textContent = `${course.coach}｜${course.schedule}`;
+    modalStores.replaceChildren();
+
+    const heading = document.createElement("h3");
+    heading.className = "modal-stores-title";
+    heading.textContent = "課程資訊";
+
+    const list = document.createElement("ul");
+    list.className = "modal-store-list";
+
+    [
+        ["課程內容", course.description],
+        ["時長", course.duration],
+        ["地點", course.location],
+    ].forEach(([label, value]) => {
+        const item = document.createElement("li");
+        item.textContent = `${label}：${value}`;
+        list.append(item);
+    });
+
+    modalStores.append(heading, list);
     document.getElementById("infoModal").style.display = "block";
 }
 
