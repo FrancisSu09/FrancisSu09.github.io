@@ -1,10 +1,25 @@
 "use strict";
 
 const HEALTH_DATA_URL = "data/processed/ihealth_employee_health.json";
-const CHAT_API_URL = "/api/chat";
+const CHAT_API_URL = getChatApiUrl();
 
 function googleMapsUrl(query) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+function getChatApiUrl() {
+    const configuredUrl = window.IHEALTH_CONFIG?.chatApiUrl?.trim();
+    if (configuredUrl) return configuredUrl;
+
+    if (isGithubPagesWithoutChatBackend()) {
+        console.warn("GitHub Pages requires window.IHEALTH_CONFIG.chatApiUrl to point to a deployed AI backend.");
+    }
+
+    return "/api/chat";
+}
+
+function isGithubPagesWithoutChatBackend() {
+    return window.location.hostname.endsWith(".github.io") && !window.IHEALTH_CONFIG?.chatApiUrl?.trim();
 }
 
 const database = {
@@ -508,6 +523,10 @@ async function handleChatbotSubmit() {
     setChatbotLoading(true);
 
     try {
+        if (isGithubPagesWithoutChatBackend()) {
+            throw new Error("GitHub Pages 需要先在 config.js 設定已部署的 AI 後端網址，才能使用 ChatBot。");
+        }
+
         const response = await fetch(CHAT_API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

@@ -10,6 +10,7 @@ loadEnvFile(path.join(__dirname, ".env"));
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "127.0.0.1";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 const GEMINI_MODELS = [
     "gemini-3.5-flash",
     "gemini-3.1-flash-lite",
@@ -47,6 +48,16 @@ const MIME_TYPES = {
 
 const server = http.createServer(async (request, response) => {
     try {
+        if (request.url === "/api/chat") {
+            applyCorsHeaders(request, response);
+        }
+
+        if (request.method === "OPTIONS" && request.url === "/api/chat") {
+            response.writeHead(204);
+            response.end();
+            return;
+        }
+
         if (request.method === "POST" && request.url === "/api/chat") {
             await handleChatRequest(request, response);
             return;
@@ -229,7 +240,7 @@ function stripMarkdown(text) {
     return String(text || "")
         .replace(/^#{1,6}\s+/gm, "")
         .replace(/^\s*[-*+]\s+/gm, "")
-        .replace(/\*\*/g, "")
+        .replace(/\*/g, "")
         .replace(/`/g, "")
         .replace(/\|/g, " ")
         .replace(/\n{3,}/g, "\n\n")
@@ -315,6 +326,30 @@ function sendJson(response, statusCode, payload) {
         "Cache-Control": "no-store"
     });
     response.end(JSON.stringify(payload));
+}
+
+function applyCorsHeaders(request, response) {
+    const origin = request.headers.origin;
+    const allowedOrigin = getAllowedOrigin(origin);
+    if (!allowedOrigin) return;
+
+    response.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+    response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    response.setHeader("Vary", "Origin");
+}
+
+function getAllowedOrigin(origin) {
+    if (!origin) return "*";
+    if (ALLOWED_ORIGINS.length === 0) return origin;
+    return ALLOWED_ORIGINS.includes(origin) ? origin : "";
+}
+
+function parseAllowedOrigins(value) {
+    return String(value || "")
+        .split(",")
+        .map(origin => origin.trim())
+        .filter(Boolean);
 }
 
 function loadEnvFile(filePath) {
